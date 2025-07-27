@@ -1,0 +1,102 @@
+﻿@using BookShoppingCartMvcUI.Repo
+@model HomePageModelView
+
+
+@{
+    ViewData["Title"] = "Book Haven - Discover Your Next Read";
+    Layout = "_Layout";
+}
+
+
+
+
+<div class="container my-5">
+    <!-- Search & Filter Section -->
+    <div class="card shadow-sm mb-4 border-0 rounded-4 bg-light">
+        <div class="card-body p-4">
+            <h4 class="mb-4 fw-bold text-dark">Find Your Next Favorite Book</h4>
+            <form class="row g-3 align-items-end" asp-action="SearchDisplay" asp-controller="Home" method="get">
+                <div class="col-md-4">
+                    <label class="form-label" for="Genre">Browse by Genre</label>
+                    <select class="form-select rounded-pill" id="Genre" name="Genre">
+                        <option value="0" selected disabled>Select genre...</option>
+                        @if (Model.GenreList?.Any() == true)
+                        {
+                            foreach (var genre in Model.GenreList)
+                            {
+                                <option value="@genre.Id">@genre.GenreName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label" for="name">Search by Title</label>
+                    <input type="text" class="form-control rounded-pill" id="name" name="name" placeholder="e.g. The Alchemist" />
+                </div>
+
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Search</button>
+                        <a href="/Home/index" class="btn btn-primary rounded-pill fw-bold">Reset</a>
+                    </div>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+
+    <!-- Book Cards -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="ayman">
+        @if (Model.BookList?.Any() == true)
+        {
+            foreach (var book in Model.BookList)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow rounded-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold">@book.BookName</h5>
+                            <p class="card-text text-muted">
+                                <strong>Genre:</strong> @book.GenreName <br />
+                                <strong>Author:</strong> @book.AuthorName <br />
+                                <strong>Price:</strong> @book.Price.ToString("C")
+                            </p>
+                            <button type="button" onclick="add(@book.Id)" class="btn btn-outline-primary w-100 rounded-pill">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col">
+                <p class="text-muted">No books found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function add(bookId) {
+            var usernameEl = document.getElementById("username");
+            if (usernameEl == null) {
+                window.location.href = "/Identity/Account/Login";
+           
+            }
+            try {
+                var response = await fetch(`/Cart/AddItem?bookId=${bookId}`);
+                if (response.status == 200) {
+                    var result = await response.json();
+                    var cartCountEl = document.getElementById("cartCount");
+                    cartCountEl.innerHTML = result;
+                    window.location.href = "#cartCount";
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    </script>
+}
